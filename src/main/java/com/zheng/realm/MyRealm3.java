@@ -9,6 +9,8 @@ import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.realm.Realm;
 
+import com.zheng.domain.User;
+
 public class MyRealm3 implements Realm {
 
 	@Override
@@ -30,8 +32,8 @@ public class MyRealm3 implements Realm {
 		}else if(!"root".equals(password)) {
 			throw new IncorrectCredentialsException("用户密码错误!");
 		}
-		//返回不同的身份凭据
-		return new SimpleAuthenticationInfo(username + "@163.com", password, getName());
+		//返回不同的身份凭据类型也不相同,这里返回对象，与realm1区别
+		return new SimpleAuthenticationInfo(new User("root", "123"), password, getName());
 	}
 
 }
