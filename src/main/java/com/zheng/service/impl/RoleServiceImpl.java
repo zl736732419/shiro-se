@@ -8,7 +8,11 @@ import com.zheng.service.RoleService;
 public class RoleServiceImpl implements RoleService {
 
 	private RoleDao roleDao = new RoleDaoImpl();
-	
+
+	public void setRoleDao(RoleDao roleDao) {
+		this.roleDao = roleDao;
+	}
+
 	@Override
 	public Role createRole(Role role) {
 		return roleDao.createRole(role);

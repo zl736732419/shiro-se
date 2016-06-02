@@ -10,22 +10,21 @@ import java.util.Set;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import com.zheng.dao.UserDao;
 import com.zheng.domain.User;
 import com.zheng.utils.JdbcTemplateUtils;
 
-public class UserDaoImpl implements UserDao {
+public class UserDaoImpl extends JdbcDaoSupport implements UserDao {
 
-	private JdbcTemplate template = JdbcTemplateUtils.getJdbcTemplate();
-	
 	@Override
 	public User createUser(final User user) {
 		final String sql = "insert into sys_users(username, password, salt, locked) values(?,?,?,?)";
 		
 		GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-		template.update(new PreparedStatementCreator() {
+		getJdbcTemplate().update(new PreparedStatementCreator() {
 			
 			@Override
 			public PreparedStatement createPreparedStatement(Connection conn) throws SQLException {
@@ -45,27 +44,27 @@ public class UserDaoImpl implements UserDao {
 	@Override
 	public void updateUser(User user) {
 		String sql = "delete from sys_users_roles where user_id=?";
-        template.update(sql, user.getId());
+		getJdbcTemplate().update(sql, user.getId());
 		sql = "update sys_users set username=?,password=?,salt=?,locked=? where id=?";
-		template.update(sql, user.getUsername(), user.getPassword(), user.getSalt(), user.getLocked(), user.getId());
+		getJdbcTemplate().update(sql, user.getUsername(), user.getPassword(), user.getSalt(), user.getLocked(), user.getId());
 	}
 	
 	@Override
 	public void deleteUser(Long userId) {
 		String sql = "delete from sys_users where id=?";
-		template.update(sql, userId);
+		getJdbcTemplate().update(sql, userId);
 	}
 
 	@Override
 	public User findOne(Long userId) {
 		String sql = "select id, username, password, salt, locked from sys_users where user_id=?";
-		return template.queryForObject(sql, User.class, userId);
+		return getJdbcTemplate().queryForObject(sql, User.class, userId);
 	}
 
 	@Override
 	public User findByUsername(String username) {
 		String sql = "select id, username, password, salt, locked from sys_users where username = ?";
-		List<User> list = template.query(sql, new BeanPropertyRowMapper<User>(User.class), username);
+		List<User> list = getJdbcTemplate().query(sql, new BeanPropertyRowMapper<User>(User.class), username);
 		if(list.size() == 0) {
 			return null;
 		}
@@ -76,7 +75,7 @@ public class UserDaoImpl implements UserDao {
 	public Set<String> findRoles(String username) {
 		String sql = "SELECT r.role FROM sys_users u INNER JOIN sys_users_roles ur ON u.id=ur.user_id "
 				+ " INNER JOIN sys_roles r ON ur.role_id = r.id WHERE u.username=?";
-		return new HashSet<String>(template.queryForList(sql, String.class, username));
+		return new HashSet<String>(getJdbcTemplate().queryForList(sql, String.class, username));
 	}
 
 	@Override
@@ -89,7 +88,7 @@ public class UserDaoImpl implements UserDao {
 			.append(" INNER JOIN sys_permissions p")
 			.append(" ON rp.permission_id = p.id")
 			.append(" WHERE u.username=?");
-		return new HashSet<String>(template.queryForList(builder.toString(), String.class, username));
+		return new HashSet<String>(getJdbcTemplate().queryForList(builder.toString(), String.class, username));
 	}
 
 	@Override
@@ -100,7 +99,7 @@ public class UserDaoImpl implements UserDao {
 		String sql = "insert into sys_users_roles(user_id, role_id) values(?, ?)";
 		for(Long roleId : roleIds) {
 			if(!exist(userId, roleId)) {
-				template.update(sql, userId, roleId);
+				getJdbcTemplate().update(sql, userId, roleId);
 			}
 		}
 	}
@@ -116,7 +115,7 @@ public class UserDaoImpl implements UserDao {
 	 */
 	private boolean exist(Long userId, Long roleId) {
 		String sql = "select count(1) from sys_users_roles where user_id = ? and role_id = ?";
-		Integer count = template.queryForObject(sql, Integer.class, userId, roleId);
+		Integer count = getJdbcTemplate().queryForObject(sql, Integer.class, userId, roleId);
 		return count > 0 ? true : false;
 	}
 
@@ -129,7 +128,7 @@ public class UserDaoImpl implements UserDao {
 		String sql = "delete from sys_users_roles where user_id = ? and role_id=?";
 		for(Long roleId : roleIds) {
 			if(exist(userId, roleId)) {
-				template.update(sql, userId, roleId);
+				getJdbcTemplate().update(sql, userId, roleId);
 			}
 		}
 		

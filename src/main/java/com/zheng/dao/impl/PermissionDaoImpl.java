@@ -4,25 +4,21 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import com.zheng.dao.PermissionDao;
 import com.zheng.domain.Permission;
-import com.zheng.utils.JdbcTemplateUtils;
 
-public class PermissionDaoImpl implements PermissionDao {
+public class PermissionDaoImpl extends JdbcDaoSupport implements PermissionDao {
 
-	private JdbcTemplate jdbcTemplate = JdbcTemplateUtils.getJdbcTemplate();
-
-	
 	@Override
 	public Permission createPermission(final Permission permission) {
 		final String sql = "insert into sys_permissions(permission, description, available) values(?,?,?)";
 
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(new PreparedStatementCreator() {
+        getJdbcTemplate().update(new PreparedStatementCreator() {
             @Override
             public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement psst = connection.prepareStatement(sql,  new String[] { "id" });
@@ -40,10 +36,10 @@ public class PermissionDaoImpl implements PermissionDao {
 	public void deletePermission(Long permissionId) {
 		//首先把与permission关联的相关表的数据删掉
         String sql = "delete from sys_roles_permissions where permission_id=?";
-        jdbcTemplate.update(sql, permissionId);
+        getJdbcTemplate().update(sql, permissionId);
 
         sql = "delete from sys_permissions where id=?";
-        jdbcTemplate.update(sql, permissionId);
+        getJdbcTemplate().update(sql, permissionId);
 		
 	}
 

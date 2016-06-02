@@ -8,11 +8,19 @@ import com.zheng.domain.User;
 import com.zheng.service.UserService;
 import com.zheng.utils.PasswordHelper;
 
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
 	private UserDao userDao = new UserDaoImpl();
 	private PasswordHelper pwdHelper = new PasswordHelper();
-	
+
+	public void setUserDao(UserDao userDao) {
+		this.userDao = userDao;
+	}
+
+	public void setPwdHelper(PasswordHelper pwdHelper) {
+		this.pwdHelper = pwdHelper;
+	}
+
 	@Override
 	public User createUser(User user) {
 		pwdHelper.encryptPassword(user);

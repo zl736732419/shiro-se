@@ -8,7 +8,11 @@ import com.zheng.service.PermissionService;
 public class PermissionServiceImpl implements PermissionService {
 
 	private PermissionDao permissionDao = new PermissionDaoImpl();
-	
+
+	public void setPermissionDao(PermissionDao permissionDao) {
+		this.permissionDao = permissionDao;
+	}
+
 	@Override
 	public Permission createPermission(Permission permission) {
 		return permissionDao.createPermission(permission);
@@ -17,7 +21,7 @@ public class PermissionServiceImpl implements PermissionService {
 	@Override
 	public void deletePermission(Long permissionId) {
 		permissionDao.deletePermission(permissionId);
-		
+
 	}
 
 }
