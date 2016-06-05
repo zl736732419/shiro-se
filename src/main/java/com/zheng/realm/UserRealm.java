@@ -19,42 +19,46 @@ import com.zheng.service.UserService;
 import com.zheng.service.impl.UserServiceImpl;
 
 public class UserRealm extends AuthorizingRealm {
-	
+
 	private UserService userService = new UserServiceImpl();
-	
+
+	public UserService getUserService() {
+		return userService;
+	}
+
+	public void setUserService(UserService userService) {
+		this.userService = userService;
+	}
+
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
 		String username = (String) principals.getPrimaryPrincipal();
-		//根据用户获取相印的角色以及权限
+		// 根据用户获取相印的角色以及权限
 		Set<String> roles = userService.findRoles(username);
 		info.addRoles(roles);
-		
+
 		Set<String> permissions = userService.findPermissions(username);
 		info.setStringPermissions(permissions);
-		
+
 		return info;
 	}
 
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-		String username = (String)token.getPrincipal();
+		String username = (String) token.getPrincipal();
 		User user = userService.findByUsername(username);
-		if(user == null) {
+		if (user == null) {
 			throw new UnknownAccountException("当前用户" + username + "不存在!");
 		}
-		
-		if(Boolean.TRUE.equals(user.getLocked())) {
+
+		if (Boolean.TRUE.equals(user.getLocked())) {
 			throw new LockedAccountException("登录失败,当前用户已禁用!");
 		}
-		
-		//否则交由下一步判断用户名和密码是否正确，这里不做判断
-		SimpleAuthenticationInfo info = new SimpleAuthenticationInfo(
-				username,
-				user.getPassword(),
-				ByteSource.Util.bytes(user.getCredentialsSalt()),
-				getName()
-		);
+
+		// 否则交由下一步判断用户名和密码是否正确，这里不做判断
+		SimpleAuthenticationInfo info = new SimpleAuthenticationInfo(username, user.getPassword(),
+				ByteSource.Util.bytes(user.getCredentialsSalt()), getName());
 		return info;
 	}
 }
